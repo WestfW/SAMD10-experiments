@@ -9,31 +9,40 @@ This started out as the SAMD10-LED-TOGGLE example project (In Atmmel Studio 6.2)
 
 Since the SAMD10 family has relatively modest amounts of memory, and since Atmel's ASF library are rather bloated, this code does not use ASF; it uses direct manipulation of the bare registers.  (Note that since the Atmel CMSIS chip and peripheral definitions are considered part of ASF, there is still an ASF directory in the project.)
 
-### Notes on Clock initialization
-SAMD10 Xplained Mini routes an 8MHz clock from the debug circuitry to the D10 Xin pin.
+### Notes on Clock Initialization
+My clock functions has inputs of F_CPU (desired clock rate), the External Clock rate, and the desied intermediate freq (32kHz)
+SAMD10 Xplained Mini routes an 8MHz clock from the debug circuitry to the D10 Xin pin.  Instead of clock sources and divisors.
 
 We can derive a faster clock from that pin using either the DFLL or the DPLL.   The DFLL only supports an output of 48MHz, while the DPLL supports an output between 48 and 96MHz, further divided by 2 (to meet the CPU max frequency specs.)  This means that the DPLL is much more flexible; essentially capable of producing any interesting frequency above 8MHz.
 
 It's not clear why one would use the DFLL.
 http://www.avrfreaks.net/forum/samd10-xplained-mini-questions-and-experiences-clocking-transitioning-pinmux
 
+Inputs to both DFLL and DPLL need to be ~32kHz.  For using the 8MHz input (or 8MHz internal clock), it is first divided by <bignumber> to get 32kHz.
+
+
 ### Notes on GPIO
 SET/CLEAR/TOGGLE registers are the quickest way to manipulate single bits.
 
-The fact that an ARM can shift by any number of bits in a single cycle can have a significant impact.  I map "Shield pin numbers" to bit positions rather than bit masks, for example.
+The fact that an ARM can shift by any number of bits in a single cycle can have a significant impact on code design.  I map "Shield pin numbers" to bit positions rather than bit masks, for example.
 
 SAMD10 only has a single GPIO port.   It has up to 24 pins, and those are scattered somewhat randomly over the 32bit registers that manipulate the port.  http://www.avrfreaks.net/forum/samd10-pinout-venting
 
 There's a table here: https://docs.google.com/spreadsheets/d/1y13QMuydCw7TpIcOEO_Sfz02DZC6AI7C76_Tfo7ayag/edit?usp=sharing
 
-An AVR can set a constant GPIO pin to a constant value in a single 2-clock instruction, but an ARM takes 4 instructions to accomplish the same thing.  On the other hand, fully implementing a variable pin/value with mapping (as in the Arudino digitalWrite() function) take about a dozen instructions, compared to about 50 fo AVR. 
+An AVR can set a constant GPIO pin to a constant value in a single 2-clock instruction, but an ARM takes 4 instructions to accomplish the same thing.  On the other hand, fully implementing a variable pin/value with mapping (as in the Arudino digitalWrite() function) takes about a dozen instructions, compared to about 50 for AVR. 
+
+The call setup to call digitalWrite() is typically 3 instructions, making inlining the function when used with constant arguments pretty compelling.
 
 http://www.avrfreaks.net/comment/1622676#comment-1622676
 
 "Open Drain" is mentioned as possible in the datasheet, but doesn't seem to be implemented.
 
+
 ### Notes on RTC
 The RTC has several modes, and some of them are similar in function to the ARM "Systick" clock, but more configurabel.  Here, we set the RTC to count microseconds, and interrupt every millisecond.
+
+The RTC does not reset on system RESET.  Only at poweron or explicit RTC Reset command.  So it MUST be disabled before it can be initialized.
 
 Clock synchronization is complicated, causes weird behavior, and is slow.  If a peripheral (like the RTC) has a prescaler that is part of the peripheral, it is better to initialize the peripheral with a fast GCLK and devide using the prescaler, than it is to use a slower divided GCLK without the peripheral prescaler.
 
@@ -54,13 +63,18 @@ The UART seems to have a 2-byte FIFO.  If you send it N bytes while not paying a
 The Baud Rate Generator seems a little unusual, and looks like it requires a 64-bit division to cover all baud rates.  This is very expensive on CM0 (sucks in big library code) if you can't get it to happen at compile-time instead.
 
 ### Notes on Timers
+Two kinds of timers: TCC0 (for Control) has 4 compare channels (8 outpus, some of which would have to complemented to be useful), and TC1/2 have 2 compare channels each (2 outputs.)
+
+Despite fancy multiplexors and 8 total compare channels, if you want to route all the compare channels to pins, you don't have many choices.
+
 
 ### Notes on ASF
 While this project is supposed to end up NOT using ASF, looking at the existing ASF code to figure out how it does things is frequently useful.
 
 Peripherals are defined as nice CMSIS-style structures in cmsis/samd10/include/component/<periph>.h and the samd10d14am.h files, with individual register addresses defined in cmsis/samd10/iclude/instance/<periph>.h  Using the structures is faster, because the base-address only gets loaded once.
 
-Peripheral registers in ASF generally include a bottom-level union of ".reg" (full-width access to the register) and ".bits.fieldname"
+Peripheral registers in ASF generally include a bottom-level union of ".reg" (full-width access to the register) and ".bits.fieldname" allowing access of individual fields.  The .reg files will let you set multiple fields at one time.
+Note that the CM0+ does not have bitfield instructions.
 
 
 ----
