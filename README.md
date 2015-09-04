@@ -18,6 +18,10 @@ It's not clear why one would use the DFLL.
 http://www.avrfreaks.net/forum/samd10-xplained-mini-questions-and-experiences-clocking-transitioning-pinmux
 
 ### Notes on GPIO
+SET/CLEAR/TOGGLE registers are the quickest way to manipulate single bits.
+
+The fact that an ARM can shift by any number of bits in a single cycle can have a significant impact.  I map "Shield pin numbers" to bit positions rather than bit masks, for example.
+
 SAMD10 only has a single GPIO port.   It has up to 24 pins, and those are scattered somewhat randomly over the 32bit registers that manipulate the port.  http://www.avrfreaks.net/forum/samd10-pinout-venting
 
 There's a table here: https://docs.google.com/spreadsheets/d/1y13QMuydCw7TpIcOEO_Sfz02DZC6AI7C76_Tfo7ayag/edit?usp=sharing
@@ -47,10 +51,16 @@ The current UART implementation is polled.
 
 The UART seems to have a 2-byte FIFO.  If you send it N bytes while not paying attention, you'll end up reading the 1st, 2nd, and last (from the shift register) bytes that were sent.
 
+The Baud Rate Generator seems a little unusual, and looks like it requires a 64-bit division to cover all baud rates.  This is very expensive on CM0 (sucks in big library code) if you can't get it to happen at compile-time instead.
+
 ### Notes on Timers
 
 ### Notes on ASF
 While this project is supposed to end up NOT using ASF, looking at the existing ASF code to figure out how it does things is frequently useful.
+
+Peripherals are defined as nice CMSIS-style structures in cmsis/samd10/include/component/<periph>.h and the samd10d14am.h files, with individual register addresses defined in cmsis/samd10/iclude/instance/<periph>.h  Using the structures is faster, because the base-address only gets loaded once.
+
+Peripheral registers in ASF generally include a bottom-level union of ".reg" (full-width access to the register) and ".bits.fieldname"
 
 
 ----
