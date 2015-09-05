@@ -21,6 +21,11 @@ http://www.avrfreaks.net/forum/samd10-xplained-mini-questions-and-experiences-cl
 
 Inputs to both DFLL and DPLL need to be ~32kHz.  For using the 8MHz input (or 8MHz internal clock), it is first divided by <bignumber> to get 32kHz.
 
+### General notes on peripherals
+A fair number of peripherals are turned on in the power manager by default, but not all of them.  If you enable a peripheral clock, but are unable to enabled the peripheral itself, that probably means that the peripheral is not enabled in the power manager.
+
+Don't forget to set the PMUXEN bit the the port config to enable the mux set in the PINMUX register.
+
 
 ### Notes on GPIO
 SET/CLEAR/TOGGLE registers are the quickest way to manipulate single bits.  SAMD0 does not seem to have bit-banding.
