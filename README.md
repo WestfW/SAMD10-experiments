@@ -10,10 +10,11 @@ This started out as the SAMD10-LED-TOGGLE example project (In Atmmel Studio 6.2)
 Since the SAMD10 family has relatively modest amounts of memory, and since Atmel's ASF library are rather bloated, this code does not use ASF; it uses direct manipulation of the bare registers.  (Note that since the Atmel CMSIS chip and peripheral definitions are considered part of ASF, there is still an ASF directory in the project.)
 
 ### Notes on Clock Initialization
-My clock functions has inputs of F_CPU (desired clock rate), the External Clock rate, and the desied intermediate freq (32kHz)
-SAMD10 Xplained Mini routes an 8MHz clock from the debug circuitry to the D10 Xin pin.  Instead of clock sources and divisors.
+My clock function has inputs of F_CPU (desired clock rate), the External Clock rate, and the desied intermediate freq (32kHz) instead of clock sources and divisors.
 
-We can derive a faster clock from that pin using either the DFLL or the DPLL.   The DFLL only supports an output of 48MHz, while the DPLL supports an output between 48 and 96MHz, further divided by 2 (to meet the CPU max frequency specs.)  This means that the DPLL is much more flexible; essentially capable of producing any interesting frequency above 8MHz.
+SAMD10 Xplained Mini routes an 8MHz clock from the debug circuitry to the D10 Xin pin; I use this as the refence.
+
+We can derive a faster clock from that pin using either the DFLL or the DPLL.   The DFLL only supports an output of 48MHz, while the DPLL supports an output between 48 and 96MHz, further divided by 2 (to meet the CPU max frequency specs) (or more.)  This means that the DPLL is much more flexible; essentially capable of producing any interesting frequency.
 
 It's not clear why one would use the DFLL.
 http://www.avrfreaks.net/forum/samd10-xplained-mini-questions-and-experiences-clocking-transitioning-pinmux
@@ -22,11 +23,11 @@ Inputs to both DFLL and DPLL need to be ~32kHz.  For using the 8MHz input (or 8M
 
 
 ### Notes on GPIO
-SET/CLEAR/TOGGLE registers are the quickest way to manipulate single bits.
+SET/CLEAR/TOGGLE registers are the quickest way to manipulate single bits.  SAMD0 does not seem to have bit-banding.
 
 The fact that an ARM can shift by any number of bits in a single cycle can have a significant impact on code design.  I map "Shield pin numbers" to bit positions rather than bit masks, for example.
 
-SAMD10 only has a single GPIO port.   It has up to 24 pins, and those are scattered somewhat randomly over the 32bit registers that manipulate the port.  http://www.avrfreaks.net/forum/samd10-pinout-venting
+SAMD10 only has a single GPIO port.   The chip has up to 24 pins, and the gpios are scattered somewhat randomly over the 32bit registers that manipulate the port.  http://www.avrfreaks.net/forum/samd10-pinout-venting
 
 There's a table here: https://docs.google.com/spreadsheets/d/1y13QMuydCw7TpIcOEO_Sfz02DZC6AI7C76_Tfo7ayag/edit?usp=sharing
 
@@ -68,6 +69,8 @@ The current UART implementation is polled.
 The UART seems to have a 2-byte FIFO.  If you send it N bytes while not paying attention, you'll end up reading the 1st, 2nd, and last (from the shift register) bytes that were sent.
 
 The Baud Rate Generator seems a little unusual, and looks like it requires a 64-bit division to cover all baud rates.  This is very expensive on CM0 (sucks in big library code) if you can't get it to happen at compile-time instead.
+
+The SAMD0 has three "SERCOM" units.  Normally one will be dedicated to UART, one to SPI, and one to I2C.
 
 ### Notes on Timers
 Two kinds of timers: TCC0 (for Control) has 4 compare channels (8 outpus, some of which would have to complemented to be useful), and TC1/2 have 2 compare channels each (2 outputs.)
