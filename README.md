@@ -39,6 +39,12 @@ http://www.avrfreaks.net/comment/1622676#comment-1622676
 "Open Drain" is mentioned as possible in the datasheet, but doesn't seem to be implemented.
 
 
+### Notes on SysTick
+It's common to use the ARM SysTick Timer as the main periodic clock (ie for Arduino millis()/etc), but the Atmel RTC is more flexible.
+
+The SysTick timer is 24 bits.  This means that if you increase the system clock to 48MHz, you can no longer use it to produce a 1s interrupt (as in the LED_TOGGLE example !)
+
+
 ### Notes on RTC
 The RTC has several modes, and some of them are similar in function to the ARM "Systick" clock, but more configurabel.  Here, we set the RTC to count microseconds, and interrupt every millisecond.
 
@@ -49,6 +55,7 @@ Clock synchronization is complicated, causes weird behavior, and is slow.  If a 
 In this case, we set up the 96MHz core clock, divided by 6 to yield a 16MHz RTC clock input, and then use the RTC prescaler to divide that down to 1MHz.
 
 http://www.avrfreaks.net/forum/samd10-rtc
+
 
 ### Notes on UART
 http://www.avrfreaks.net/forum/samd21-serial-port-setup-and-hello-world
