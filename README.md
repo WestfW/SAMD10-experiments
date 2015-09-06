@@ -2,6 +2,9 @@
 
 ## Note: This is a work-in-progress
 
+Working: pinMode, digitalWrite, Serial primitives (polled), msclock, mills, micros, delay, delayMicroseconds, analogWrite using TCC0.
+In Progress: analogWrite using TC0/1, digitalRead
+
 This is an experiment in adding arduino-core-like functionality to the Atmel SAMD10 Xplained Mini Eval board.
 Because implementing the Ardunio core is a good way to explore the capabilities of a microcontroller.
 
