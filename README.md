@@ -26,13 +26,17 @@ A fair number of peripherals are turned on in the power manager by default, but 
 
 Don't forget to set the PMUXEN bit the the port config to enable the mux set in the PINMUX register.
 
+There are constants defined in ASF of the form PINMUX_PAnnv_periph_func (ie PINMUX_PA09E_TCC0_WO3) that have the pinmux possibilities for pin PAnn.  nn in the high 16 bits, v (the pinmux value) in the low 16 bits.
+
 
 ### Notes on GPIO
+Shield pin 6 (PA30) has the SW Debug traffic running on it, so you can't use it while debugging.
+
 SET/CLEAR/TOGGLE registers are the quickest way to manipulate single bits.  SAMD0 does not seem to have bit-banding.
 
 The fact that an ARM can shift by any number of bits in a single cycle can have a significant impact on code design.  I map "Shield pin numbers" to bit positions rather than bit masks, for example.
 
-SAMD10 only has a single GPIO port.   The chip has up to 24 pins, and the gpios are scattered somewhat randomly over the 32bit registers that manipulate the port.  http://www.avrfreaks.net/forum/samd10-pinout-venting
+SAMD10 only has a single ("32bit") GPIO port.   The chip has up to 24 pins, and the gpio bits are scattered somewhat randomly over the pins.  http://www.avrfreaks.net/forum/samd10-pinout-venting
 
 There's a table here: https://docs.google.com/spreadsheets/d/1y13QMuydCw7TpIcOEO_Sfz02DZC6AI7C76_Tfo7ayag/edit?usp=sharing
 
@@ -91,7 +95,7 @@ Peripherals are defined as nice CMSIS-style structures in cmsis/samd10/include/c
 Peripheral registers in ASF generally include a bottom-level union of ".reg" (full-width access to the register) and ".bits.fieldname" allowing access of individual fields.  The .reg files will let you set multiple fields at one time.
 Note that the CM0+ does not have bitfield instructions.
 
-
+There are a bunch of defined symbols that seem to have an obvious function, but they are actually more complicated ASF "abstractions."  The PINMUX symbols mentioned above are one example.  Also PORT_PAnn is a bitmask (bit nn)
 ----
 
 AVFreaks users "kernels" and "alexru" have been especially helpful!
