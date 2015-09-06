@@ -98,7 +98,10 @@ Peripherals are defined as nice CMSIS-style structures in cmsis/samd10/include/c
 Peripheral registers in ASF generally include a bottom-level union of ".reg" (full-width access to the register) and ".bits.fieldname" allowing access of individual fields.  The .reg files will let you set multiple fields at one time.
 Note that the CM0+ does not have bitfield instructions.
 
-There are a bunch of defined symbols that seem to have an obvious function, but they are actually more complicated ASF "abstractions."  The PINMUX symbols mentioned above are one example.  Also PORT_PAnn is a bitmask (bit nn)
+There are a bunch of defined symbols that seem to have an obvious function, but they are actually more complicated ASF "abstractions."  The PINMUX symbols mentioned above are one example.
+
+PORT_PAnn is a bitmask (bit nn)
+
 ----
 
 AVFreaks users "kernels" and "alexru" have been especially helpful!
