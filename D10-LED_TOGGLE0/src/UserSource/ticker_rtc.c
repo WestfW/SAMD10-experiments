@@ -42,11 +42,6 @@ int rtctick_tracei = 0;
 
 void RTC_init()
 {
-  //Configure GCLK Generator 2 to use a divided FDPLL (96MHz) as input, and feed this clock to RTC
-  // This gives us a 16MHz RTC clock.
-  GCLK->GENDIV.reg  = ((2 << GCLK_GENDIV_ID_Pos) | (6 << GCLK_GENDIV_DIV_Pos));
-  GCLK->GENCTRL.reg = ((2 << GCLK_GENCTRL_ID_Pos) | GCLK_GENCTRL_GENEN |
-		       (GCLK_SOURCE_FDPLL << GCLK_GENCTRL_SRC_Pos));
   GCLK->CLKCTRL.reg = ((GCLK_CLKCTRL_GEN_GCLK2) | (GCLK_CLKCTRL_CLKEN) |
 		       (GCLK_CLKCTRL_ID(RTC_GCLK_ID)));
   // Now configure the RTC preacaler for divide-by-16, for 1MHz "tick", and have it

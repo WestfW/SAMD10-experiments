@@ -32,12 +32,13 @@
 void digitalWrite(uint8_t pinno, uint8_t level)
 {
   PortGroup *const port_base = &(PORT->Group[0]); /* port_get_group_from_gpio_pin(1); */ // any pin will work.
-  uint32_t pin_mask  = (1UL << (digital_pin_to_pinno[pinno]));
-  
+  uint32_t bitno  = digital_pin_to_pinno[pinno];
+
+  port_base->PINCFG[digital_pin_to_pinno[pinno]].reg &= ~PORT_PINCFG_PMUXEN;
   if (level) {
-    port_base->OUTSET.reg = pin_mask;
+    port_base->OUTSET.reg = 1<<bitno;
   } else {
-    port_base->OUTCLR.reg = pin_mask;
+    port_base->OUTCLR.reg = 1<<bitno;
   }
 }
 

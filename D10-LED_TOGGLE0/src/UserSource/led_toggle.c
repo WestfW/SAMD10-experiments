@@ -87,7 +87,12 @@ void system_clock_init()
 	GCLK->GENCTRL.reg = ((0 << GCLK_GENCTRL_ID_Pos) | (GCLK_GENCTRL_SRC_DFLL48M) | (GCLK_GENCTRL_GENEN));
 	GCLK->CLKCTRL.reg = ((GCLK_CLKCTRL_GEN_GCLK0) | (GCLK_CLKCTRL_CLKEN)) ;
 #endif
-
+  //Configure GCLK Generator 2 to use a divided FDPLL (96MHz) as input, and feed this clock to RTC
+  // This gives us a 16MHz RTC clock.
+#define MYCLK_16MHZ 2
+  GCLK->GENDIV.reg  = ((MYCLK_16MHZ << GCLK_GENDIV_ID_Pos) | (6 << GCLK_GENDIV_DIV_Pos));
+  GCLK->GENCTRL.reg = ((MYCLK_16MHZ << GCLK_GENCTRL_ID_Pos) | GCLK_GENCTRL_GENEN |
+  (GCLK_SOURCE_FDPLL << GCLK_GENCTRL_SRC_Pos));
 }
 #endif /* CUSTOMCLOCK */
 
@@ -109,7 +114,8 @@ void system_clock_init()
     "msr PRIMASK,r0;\n\t"               \
     ::[input] "m" (cpuSR) : "r0");      \
   } while(0)
-  
+
+
 /** Handler for the device SysTick module, called when the SysTick counter
  *  reaches the set period.
  *
@@ -117,23 +123,64 @@ void system_clock_init()
  *        and must not be altered to ensure it is hooked into the device's
  *        vector table.
  */
-static uint8_t ledval = 0;
-
 
 static volatile uint32_t rtcount;
 uint32_t testmicros[100];
 
+#define TESTPIN 5
+void breath() {
+	int i;
+	for (i = 1; i < 100; i++) {
+		analogWrite(TESTPIN, i);
+		delay(4);
+	}
+	for (i = 100; i != 0; i--) {
+		analogWrite(TESTPIN, i);
+		delay(4);
+	}
+	analogWrite(TESTPIN, 0);
+}
+
+void blink() {
+	int i;
+	
+	for (i=0; i < 5; i++) {
+		delay(200);
+		digitalWrite(TESTPIN,1);
+		delay(200);
+		digitalWrite(TESTPIN,0);
+	}
+}
+
+void chat() {
+	static uint32_t nextprint = 0;
+	int c;
+
+	if (millis() > nextprint) {
+		while((c = uart_getc()) > 0) {
+			uart_puts("\n I have received a '");
+			uart_putc(c);
+			uart_putc('\'');
+		}
+		nextprint += 2000;
+	}
+}
+
 int main(void)
 {
 	system_init();
-	uint32_t nextprint = 0;
-	int c;
 
 	RTC_init();  /* Initialized RTC to provide us count and ms interrupts. */
+	analogWrite_init();
 	uart_init(57600);
 	
-	pinMode(13, OUTPUT);
-	delay(2000);
+	pinMode(TESTPIN, OUTPUT);
+	analogWrite(2, 50);
+	analogWrite(5,100);
+	analogWrite(10,150);
+	analogWrite(11,200);
+	
+	delay(20000);
 	uart_puts("\nthis is a test \n");
 	
 	for (int i=0; i<100; i++) {
@@ -141,19 +188,11 @@ int main(void)
 		testmicros[i]= micros();
 	}
 	while (true) {
-//		rtcount = RTC_get_count();
-		delay(5);
-		digitalWrite(13, 1);
-		delay(5);
-		digitalWrite(13, 0);
-		if (millis() > nextprint) {
-			uart_puts("\nA couple seconds have done by");
-			if ((c = uart_getc()) > 0) {
-				uart_puts(" And I received a '");
-				uart_putc(c);
-				uart_putc('\'');
-			}
-			nextprint += 2000;
-		}
+		blink();
+		chat();
+		delay(1000);
+		breath();
+		delay(1000);
 	}
 }
+

@@ -11,6 +11,11 @@ extern const int8_t digital_pin_to_pinno[];
 extern void __attribute__ ((noinline)) pinMode(uint8_t, uint8_t);
 extern void __attribute__ ((noinline)) digitalWrite(uint8_t, uint8_t);
 
+/*
+ * wiring_analog.h
+ */
+extern void analogWrite(int, int);
+extern void analogWrite_init(void);
 
 /*
  * ticker.c
