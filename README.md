@@ -82,6 +82,12 @@ The UART seems to have a 2-byte FIFO.  If you send it N bytes while not paying a
 
 The Baud Rate Generator seems a little unusual, and looks like it requires a 64-bit division to cover all baud rates.  This is very expensive on CM0 (sucks in big library code) if you can't get it to happen at compile-time instead.
 
+The BRG has two async modes; one with an "integer divisor", and one with a "fractional divisor."   You might think that the fractional divisor would be more complicated, but it's not.   The Integral divisor is "weird" and typical code will use 64bit math to compute the BRG register contents.   The fractional divisor uses simpler math, and the faction will be zero for most common bitrates with a 48MHz clock.
+
+BRG calcuations can be done at compile-time, of course, if the baud rate is a constant.  Which is good, because otherwise you suck in division code (no divide instruction on M0)
+
+Atmel put the fractional part of the BRG register in the wrong place.  Sigh.
+
 The SAMD0 has three "SERCOM" units.  Normally one will be dedicated to UART, one to SPI, and one to I2C.
 
 ### Notes on Timers
