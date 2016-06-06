@@ -82,6 +82,12 @@ The UART seems to have a 2-byte FIFO.  If you send it N bytes while not paying a
 
 The Baud Rate Generator seems a little unusual, and looks like it requires a 64-bit division to cover all baud rates.  This is very expensive on CM0 (sucks in big library code) if you can't get it to happen at compile-time instead.
 
+The BRG has two async modes; one with an "integer divisor", and one with a "fractional divisor."   You might think that the fractional divisor would be more complicated, but it's not.   The Integral divisor is "weird" and typical code will use 64bit math to compute the BRG register contents.   The fractional divisor uses simpler math, and the faction will be zero for most common bitrates with a 48MHz clock.
+
+BRG calcuations can be done at compile-time, of course, if the baud rate is a constant.  Which is good, because otherwise you suck in division code (no divide instruction on M0)
+
+Atmel put the fractional part of the BRG register in the wrong place.  Sigh.
+
 The SAMD0 has three "SERCOM" units.  Normally one will be dedicated to UART, one to SPI, and one to I2C.
 
 ### Notes on Timers
@@ -93,12 +99,17 @@ Despite fancy multiplexors and 8 total compare channels, if you want to route al
 ### Notes on ASF
 While this project is supposed to end up NOT using ASF, looking at the existing ASF code to figure out how it does things is frequently useful.
 
-Peripherals are defined as nice CMSIS-style structures in cmsis/samd10/include/component/<periph>.h and the samd10d14am.h files, with individual register addresses defined in cmsis/samd10/iclude/instance/<periph>.h  Using the structures is faster, because the base-address only gets loaded once.
+Atmel apparently considers CMSIS defs to be part of ASF, so the CMSIS files and definitions appear in the ASF part of the project tree.
 
-Peripheral registers in ASF generally include a bottom-level union of ".reg" (full-width access to the register) and ".bits.fieldname" allowing access of individual fields.  The .reg files will let you set multiple fields at one time.
-Note that the CM0+ does not have bitfield instructions.
+Peripherals are defined as nice CMSIS-style structures in cmsis/samd10/include/component/<periph>.h and the samd10d14am.h files, with individual register addresses defined in cmsis/samd10/iclude/instance/<periph>.h  Using the structures when accessing multiple peripheral registers is faster, because the base-address only needs to be loaded once.
 
-There are a bunch of defined symbols that seem to have an obvious function, but they are actually more complicated ASF "abstractions."  The PINMUX symbols mentioned above are one example.  Also PORT_PAnn is a bitmask (bit nn)
+Peripheral registers in ASF generally include a bottom-level union of ".reg" (full-width access to the register) and ".bits.fieldname" allowing access of individual bitfields (note that the .bit.xxx names are bitFIELDS and not (always) individual bits.)  The .reg files will let you set multiple fields at one time.
+Note that the CM0+ does not have bitfield instructions, so accessing bitfields is not very efficient.
+
+There are a bunch of defined symbols that seem to have an obvious function, but they are actually more complicated ASF "abstractions."  The PINMUX symbols mentioned above are one example.
+
+PORT_PAnn is a bitmask (bit nn)  PIN_PAnn is a bit number.
+
 ----
 
 AVFreaks users "kernels" and "alexru" have been especially helpful!
