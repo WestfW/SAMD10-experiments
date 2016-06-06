@@ -33,7 +33,11 @@ extern void delayMicroseconds(uint32_t delay);
 void uart_init_(int baud_d);
 // Try to get the baud rate divisor calculated at compile time
 static inline void uart_init(uint32_t baud) {
+	/* Integer Divisor mode 
 	int br = 65536ULL * (F_CPU - 16ULL * baud) / F_CPU;
+	*/
+	/* Fractional Divisor mode */
+	int br = (F_CPU/16)/baud;   // close enough at high F_CPU...
 	uart_init_(br);
 }
 extern void uart_putc(char c);
