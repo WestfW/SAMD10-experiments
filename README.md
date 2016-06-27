@@ -15,7 +15,7 @@ Since the SAMD10 family has relatively modest amounts of memory, and since Atmel
 ### Notes on Clock Initialization
 My clock function has inputs of F_CPU (desired clock rate), the External Clock rate, and the desied intermediate freq (32kHz) instead of clock sources and divisors.
 
-SAMD10 Xplained Mini routes an 8MHz clock from the debug circuitry to the D10 Xin pin; I use this as the refence.
+SAMD10 Xplained Mini routes an 8MHz clock from the debug circuitry to the D10 Xin pin; I use this as the reference.
 
 We can derive a faster clock from that pin using either the DFLL or the DPLL.   The DFLL only supports an output of 48MHz, while the DPLL supports an output between 48 and 96MHz, further divided by 2 (to meet the CPU max frequency specs) (or more.)  This means that the DPLL is much more flexible; essentially capable of producing any interesting frequency.
 
@@ -35,15 +35,18 @@ There are constants defined in ASF of the form PINMUX_PAnnv_periph_func (ie PINM
 ### Notes on GPIO
 Shield pin 6 (PA30) has the SW Debug traffic running on it, so you can't use it while debugging.
 
-SET/CLEAR/TOGGLE registers are the quickest way to manipulate single bits.  SAMD0 does not seem to have bit-banding.
+SET/CLEAR/TOGGLE registers are the quickest way to manipulate single bits.  SAMDxx does not seem to have bit-banding.
 
 The fact that an ARM can shift by any number of bits in a single cycle can have a significant impact on code design.  I map "Shield pin numbers" to bit positions rather than bit masks, for example.
 
 SAMD10 only has a single ("32bit") GPIO port.   The chip has up to 24 pins, and the gpio bits are scattered somewhat randomly over the pins.  http://www.avrfreaks.net/forum/samd10-pinout-venting
 
 There's a table here: https://docs.google.com/spreadsheets/d/1y13QMuydCw7TpIcOEO_Sfz02DZC6AI7C76_Tfo7ayag/edit?usp=sharing
+And something for pinmux here: https://docs.google.com/spreadsheets/d/12YnZpTPGxS-oINhrRfFgx2rkwPUyUYQbXvVIME8oCHY/edit#gid=0
 
 An AVR can set a constant GPIO pin to a constant value in a single 2-clock instruction, but an ARM takes 4 instructions to accomplish the same thing.  On the other hand, fully implementing a variable pin/value with mapping (as in the Arudino digitalWrite() function) takes about a dozen instructions, compared to about 50 for AVR. 
+
+There's a high speed IOBUS for accessing the GPIO Ports at 0x60000000; it's not well documented.
 
 The call setup to call digitalWrite() is typically 3 instructions, making inlining the function when used with constant arguments pretty compelling.
 
@@ -63,7 +66,7 @@ The RTC has several modes, and some of them are similar in function to the ARM "
 
 The RTC does not reset on system RESET.  Only at poweron or explicit RTC Reset command.  So it MUST be disabled before it can be initialized.
 
-Clock synchronization is complicated, causes weird behavior, and is slow.  If a peripheral (like the RTC) has a prescaler that is part of the peripheral, it is better to initialize the peripheral with a fast GCLK and devide using the prescaler, than it is to use a slower divided GCLK without the peripheral prescaler.
+Clock synchronization is complicated, causes weird behavior, and is slow.  If a peripheral (like the RTC) has a prescaler that is part of the peripheral, it is better to initialize the peripheral with a fast GCLK and divide using the prescaler, than it is to use a slower divided GCLK without the peripheral prescaler (because synchronization depends on the GCLK provided.)
 
 In this case, we set up the 96MHz core clock, divided by 6 to yield a 16MHz RTC clock input, and then use the RTC prescaler to divide that down to 1MHz.
 
@@ -101,7 +104,7 @@ While this project is supposed to end up NOT using ASF, looking at the existing 
 
 Atmel apparently considers CMSIS defs to be part of ASF, so the CMSIS files and definitions appear in the ASF part of the project tree.
 
-Peripherals are defined as nice CMSIS-style structures in cmsis/samd10/include/component/<periph>.h and the samd10d14am.h files, with individual register addresses defined in cmsis/samd10/iclude/instance/<periph>.h  Using the structures when accessing multiple peripheral registers is faster, because the base-address only needs to be loaded once.
+Peripherals are defined as nice CMSIS-style structures in cmsis/samd10/include/component/<periph>.h and the samd10d14am.h files, with individual register addresses defined in cmsis/samd10/include/instance/<periph>.h  Using the structures when accessing multiple peripheral registers is faster, because the base-address only needs to be loaded once.
 
 Peripheral registers in ASF generally include a bottom-level union of ".reg" (full-width access to the register) and ".bits.fieldname" allowing access of individual bitfields (note that the .bit.xxx names are bitFIELDS and not (always) individual bits.)  The .reg files will let you set multiple fields at one time.
 Note that the CM0+ does not have bitfield instructions, so accessing bitfields is not very efficient.
