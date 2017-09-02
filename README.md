@@ -113,6 +113,9 @@ There are a bunch of defined symbols that seem to have an obvious function, but 
 
 PORT_PAnn is a bitmask (bit nn)  PIN_PAnn is a bit number.
 
+Be careful with using the bitfield structures with the numerous xxxCLR and xxxSET io registers.  The compiler will produced load/clearbits/setbits/store sequences, which will frequently do the wrong thing, especially with the xxxCLR registers.  For example, "SERCOM5->USART.INTENCLR.bit.DRE = 1;" will end up clearing any other interrupts that were enabled at the time, since they read as one, and clear the bit when the one is written.  https://community.atmel.com/forum/problem-clearingsetting-bit-interrupt-flag-register
+
+
 ----
 
 AVFreaks users "kernels" and "alexru" have been especially helpful!
