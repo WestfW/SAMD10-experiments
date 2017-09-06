@@ -104,7 +104,7 @@ While this project is supposed to end up NOT using ASF, looking at the existing 
 
 Atmel apparently considers CMSIS defs to be part of ASF, so the CMSIS files and definitions appear in the ASF part of the project tree.
 
-Peripherals are defined as nice CMSIS-style structures in cmsis/samd10/include/component/<periph>.h and the samd10d14am.h files, with individual register addresses defined in cmsis/samd10/include/instance/<periph>.h  Using the structures when accessing multiple peripheral registers is faster, because the base-address only needs to be loaded once.
+Peripherals are defined as nice CMSIS-style structures in cmsis/samd10/include/component/\<periph\>.h and the samd10d14am.h files, with individual register addresses defined in cmsis/samd10/include/instance/\<periph\>.h  Using the structures when accessing multiple peripheral registers is faster, because the base-address only needs to be loaded once.
 
 Peripheral registers in ASF generally include a bottom-level union of ".reg" (full-width access to the register) and ".bits.fieldname" allowing access of individual bitfields (note that the .bit.xxx names are bitFIELDS and not (always) individual bits.)  The .reg files will let you set multiple fields at one time.
 Note that the CM0+ does not have bitfield instructions, so accessing bitfields is not very efficient.
