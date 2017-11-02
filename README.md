@@ -62,7 +62,7 @@ The SysTick timer is 24 bits.  This means that if you increase the system clock 
 
 
 ### Notes on RTC
-The RTC has several modes, and some of them are similar in function to the ARM "Systick" clock, but more configurabel.  Here, we set the RTC to count microseconds, and interrupt every millisecond.
+The RTC has several modes, and some of them are similar in function to the ARM "Systick" clock, but more configurable.  Here, we set the RTC to count microseconds, and interrupt every millisecond.  Note that the SAMD10 RTC is different from SAMD2x RTC - the SAMD2x RTC is limited to 32kHz input clock, while SAMD10 can use essentially any GCLK.
 
 The RTC does not reset on system RESET.  Only at poweron or explicit RTC Reset command.  So it MUST be disabled before it can be initialized.
 
