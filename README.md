@@ -70,6 +70,8 @@ Clock synchronization is complicated, causes weird behavior, and is slow.  If a 
 
 In this case, we set up the 96MHz core clock, divided by 6 to yield a 16MHz RTC clock input, and then use the RTC prescaler to divide that down to 1MHz.
 
+Note that the SAMD1x RTC is significantly different than the RTC in other Atmel ARM chips.  Specifically, in most chips, the RTC can only be driven from one of the low-speed (32kHz) clocks, rather than from a GCLK.
+
 http://www.avrfreaks.net/forum/samd10-rtc
 
 
