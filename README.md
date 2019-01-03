@@ -118,6 +118,9 @@ PORT_PAnn is a bitmask (bit nn)  PIN_PAnn is a bit number.
 Be careful with using the bitfield structures with the numerous xxxCLR and xxxSET io registers.  The compiler will produced load/clearbits/setbits/store sequences, which will frequently do the wrong thing, especially with the xxxCLR registers.  For example, "SERCOM5->USART.INTENCLR.bit.DRE = 1;" will end up clearing any other interrupts that were enabled at the time, since they read as one, and clear the bit when the one is written.  https://community.atmel.com/forum/problem-clearingsetting-bit-interrupt-flag-register
 
 
+### Notes on Floating Point
+The Cortex-M0+ lacks floating point hardware, of course.  However, it also lacks "chip-optimized" floating point functions in libgcc.  If you use floating point on a CM0 or CM0+ chip, you will get the "generic" libgcc floating point code, written in C, that is quite large and slow, even compared with something like a CM3 (which DOES have chip-optimized float code.)  This is ... annoying, since the CM0+ has less memory and slower clock.  (however, see: https://www.quinapalus.com/qfplib.html )
+
 ----
 
 AVFreaks users "kernels" and "alexru" have been especially helpful!
