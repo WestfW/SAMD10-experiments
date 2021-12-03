@@ -56,13 +56,13 @@ http://www.avrfreaks.net/comment/1622676#comment-1622676
 
 
 ### Notes on SysTick
-It's common to use the ARM SysTick Timer as the main periodic clock (ie for Arduino millis()/etc), but the Atmel RTC is more flexible.
+It's common to use the ARM SysTick Timer as the main periodic clock (ie for Arduino millis()/etc), but the SAMD10 RTC is more flexible.
 
 The SysTick timer is 24 bits.  This means that if you increase the system clock to 48MHz, you can no longer use it to produce a 1s interrupt (as in the LED_TOGGLE example !)
 
 
 ### Notes on RTC
-The RTC has several modes, and some of them are similar in function to the ARM "Systick" clock, but more configurable.  Here, we set the RTC to count microseconds, and interrupt every millisecond.  Note that the SAMD10 RTC is different from SAMD2x RTC - the SAMD2x RTC is limited to 32kHz input clock, while SAMD10 can use essentially any GCLK.
+The RTC has several modes, and some of them are similar in function to the ARM "Systick" clock, but more configurable.  Here, we set the RTC to count microseconds, and interrupt every millisecond.
 
 The RTC does not reset on system RESET.  Only at poweron or explicit RTC Reset command.  So it MUST be disabled before it can be initialized.
 
@@ -70,7 +70,7 @@ Clock synchronization is complicated, causes weird behavior, and is slow.  If a 
 
 In this case, we set up the 96MHz core clock, divided by 6 to yield a 16MHz RTC clock input, and then use the RTC prescaler to divide that down to 1MHz.
 
-Note that the SAMD1x RTC is significantly different than the RTC in other Atmel ARM chips.  Specifically, in most chips, the RTC can only be driven from one of the low-speed (32kHz) clocks, rather than from a GCLK.
+ Note that the RTC is different across different SAM parts - on some parts (SAMC and SAMD5x in particular), the RTC can only be clocked by a dedicated 32kHz oscillator, while on SAMD10 and SAMD21 it can be clocked by any GCLK.  (presumably a dedicated low-frequency clock allows for lower-power sleep modes.)
 
 http://www.avrfreaks.net/forum/samd10-rtc
 
